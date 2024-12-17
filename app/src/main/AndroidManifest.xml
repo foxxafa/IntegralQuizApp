@@ -16,6 +16,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".QuestionActivity" />
+        <activity android:name=".RuleSelectionActivity" />
+        <activity android:name=".HistoryActivity" />
+        <activity android:name=".SettingsActivity" />
+
+
     </application>
 
 </manifest>
