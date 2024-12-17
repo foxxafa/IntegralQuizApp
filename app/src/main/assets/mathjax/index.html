@@ -2,13 +2,25 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <script src="es5/tex-mml-chtml.js"></script>
-    <script>
+    <title>MathJax Renderer</title>
+    <script type="text/javascript" id="MathJax-script" async
+            src="es5/tex-mml-chtml.js">
+    </script>
+    <script type="text/javascript">
         function setLatex(latex) {
-            document.getElementById("math").innerHTML = `$$${latex}$$`;
+            document.getElementById('math').innerHTML = `$$${latex}$$`;
             MathJax.typesetPromise();
         }
     </script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
 <div id="math"></div>

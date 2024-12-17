@@ -4,8 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,8 +59,12 @@ public class MainActivity extends AppCompatActivity {
     private void setupWebView(WebView webView) {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true); // DOM Storage'ı aktif et
+        webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null); // Donanım katmanı sorunlarını önler
+        webView.setWebViewClient(new WebViewClient()); // URL yüklenmesini garanti eder
         webView.loadUrl("file:///android_asset/mathjax/index.html");
     }
+
 
     private void prepareNextQuestion() {
         Random rand = new Random();
@@ -108,6 +114,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateLatex(WebView webView, String latex) {
         String js = "javascript:setLatex(\"" + latex.replace("\\", "\\\\") + "\")";
-        webView.evaluateJavascript(js, null);
+        webView.post(() -> {
+            webView.evaluateJavascript(js, value -> {
+                Log.d("WebView", "Latex set response: " + value);
+            });
+        });
     }
+
 }
