@@ -2,54 +2,130 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>MathJax Integration</title>
+    <title>Integral Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         html, body {
             margin: 0;
+            padding: 0;
             height: 100%;
+            font-family: sans-serif;
+            background: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw; /* Container ekran genişliğini kaplıyor */
+            box-sizing: border-box;
+            padding: 0; /* Padding kaldırıldı */
+            align-items: center; /* Butonları yatayda ortalamak için */
+        }
+
+        .question-area {
+            flex: 0 0 30%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .space-area {
+            flex: 0 0 3%;
+        }
+
+        .options-area {
+            flex: 0 0 67%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5vh;
+        }
+
+        #question_math {
+            font-size: 4vh;
             text-align: center;
         }
-        #math {
-            font-size: 1.5em;
+
+        .option-btn {
+            width: 80vw; /* Ekran genişliğinin %80'i */
+            background: #673ab7;
+            color: #fff;
+            border: none;
+            font-size: 3.2vh;
+            font-weight: bold;
+            padding: 4vh 0;
+            border-radius: 1vh;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .option-btn:hover {
+            background: #5e35b1;
+            transform: scale(1.03);
         }
     </style>
+
     <script type="text/javascript">
         window.MathJax = {
             tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
             svg: { fontCache: 'global' },
             startup: {
                 ready: () => {
-                    console.log('MathJax ready');
+                    console.log('MathJax loaded');
                     window.isMathJaxLoaded = true;
                     MathJax.startup.defaultReady();
                 }
             }
         };
     </script>
-    <script src="./es5/tex-mml-chtml.js" async></script>
+    <script src="es5/tex-mml-chtml.js" async></script>
     <script>
-        function setLatex(latex, index) {
+        window.isMathJaxLoaded = false;
+
+        function setLatex(elementId, latex) {
             if (window.isMathJaxLoaded) {
-                document.getElementById('math').innerHTML = '\\(' + latex + '\\)';
-                MathJax.typesetPromise()
-                    .then(() => {
-                        console.log("MathJax rendered successfully!");
-                        document.getElementById('math').onclick = () => {
-                            AndroidInterface.onOptionClick(index);
-                        };
-                    })
-                    .catch(err => console.error("MathJax error:", err));
+                const el = document.getElementById(elementId);
+                if (el) {
+                    el.innerHTML = '\\(' + latex + '\\)';
+                    MathJax.typesetPromise([el])
+                        .then(() => console.log("Rendered: " + latex))
+                        .catch(err => console.error("MathJax render error:", err));
+                } else {
+                    console.error("Element not found:", elementId);
+                }
             } else {
                 console.error("MathJax is not loaded yet!");
             }
         }
-    </script>
 
+        function onOptionClick(index) {
+            if (window.AndroidInterface && window.AndroidInterface.selectOption) {
+                AndroidInterface.selectOption(index);
+            } else {
+                console.error("AndroidInterface or selectOption not found.");
+            }
+        }
+    </script>
 </head>
 <body>
-<div id="math">MathJax yükleniyor...</div>
+<div class="container">
+    <div class="question-area">
+        <div id="question_math">MathJax yükleniyor...</div>
+    </div>
+    <div class="space-area"></div>
+    <div class="options-area">
+        <button class="option-btn" id="option0_math" onclick="onOptionClick(0)">Seçenek 1</button>
+        <button class="option-btn" id="option1_math" onclick="onOptionClick(1)">Seçenek 2</button>
+        <button class="option-btn" id="option2_math" onclick="onOptionClick(2)">Seçenek 3</button>
+        <button class="option-btn" id="option3_math" onclick="onOptionClick(3)">Seçenek 4</button>
+    </div>
+</div>
 </body>
 </html>
