@@ -17,6 +17,10 @@ public class IntegralRule {
         return name;
     }
 
+    public String getFormula() {
+        return integralTemplate; // Yeni eklenen getter metodu
+    }
+
     public String getIntegralLatex(double a, double b, double n) {
         int ai = (int) a;
         int bi = (int) b;

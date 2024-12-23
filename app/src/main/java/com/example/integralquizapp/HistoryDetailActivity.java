@@ -1,39 +1,55 @@
 package com.example.integralquizapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class HistoryDetailActivity extends AppCompatActivity {
 
-    private TextView ruleNameTextView, dateTextView, correctTextView, wrongTextView;
+    private WebView historyWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history_detail);
 
-        ruleNameTextView = findViewById(R.id.ruleNameTextView);
-        dateTextView = findViewById(R.id.dateTextView);
-        correctTextView = findViewById(R.id.correctTextView);
-        wrongTextView = findViewById(R.id.wrongTextView);
+        historyWebView = findViewById(R.id.historyDetailWebView);
+        WebSettings ws = historyWebView.getSettings();
+        ws.setJavaScriptEnabled(true);
+        ws.setDomStorageEnabled(true);
 
-        // Veriyi al
-        String date = getIntent().getStringExtra("date");
-        int correct = getIntent().getIntExtra("correct", 0);
-        int wrong = getIntent().getIntExtra("wrong", 0);
+        historyWebView.setWebViewClient(new WebViewClient());
 
-        // ruleName kullanılmayacak, gizle
-        ruleNameTextView.setVisibility(View.GONE);
+        // history_detail.html'i yükleyin
+        historyWebView.loadUrl("file:///android_asset/mathjax/history_detail.html");
 
-        // Basit format
-        // Örneğin ekranda:
-        // 2024-12-18 19:21
-        // Doğru: 2   Yanlış: 1
-        dateTextView.setText(date);
-        correctTextView.setText("Doğru: " + correct);
-        wrongTextView.setText("Yanlış: " + wrong);
+        // Intent ile gelen JSON verisi
+        final String detailJson = getIntent().getStringExtra("detail_json"); // FINAL olarak tanımlandı
+        final String safeJson = (detailJson != null ? detailJson : "{}"); // Null kontrolü yapıldı;
+
+        // Sayfa yüklendikten sonra JS fonksiyonunu çağıralım
+        historyWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+
+                // JSON'u güvenli hale getirin
+                String escapedJson = safeJson
+                        .replace("\\", "\\\\")
+                        .replace("\"", "\\\"");
+
+                // JS fonksiyonunu çağır
+                String jsCode = "showHistoryDetail(\"" + escapedJson + "\");";
+                historyWebView.evaluateJavascript(jsCode, null);
+            }
+        });
     }
-}
 
+}

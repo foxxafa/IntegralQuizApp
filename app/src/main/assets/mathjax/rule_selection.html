@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rule Selection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            font-family: sans-serif;
+        }
+        .ruleContainer {
+            padding: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #aaa;
+        }
+        .checkboxArea {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .latexArea {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        .saveBtn {
+            width: 100%;
+            padding: 16px;
+            background: #673ab7;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+
+    <!-- MathJax (local veya CDN'den) -->
+    <!-- Burada local dosyayı kullandığınızı varsayıyoruz: es5/tex-mml-chtml.js -->
+    <script src="es5/tex-mml-chtml.js" async></script>
+
+    <script>
+        // MathJax global yüklenme kontrolü
+        window.isMathJaxLoaded = false;
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+            svg: { fontCache: 'global' },
+            startup: {
+                ready: () => {
+                    window.isMathJaxLoaded = true;
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+
+        // Burada, Android tarafında RuleSelectionActivity'den "rules" bilgisini JSON olarak
+        // aldığımızda, bu fonksiyon çalışacak ve ekrana checkbox + LaTeX basacak.
+        function showRules(rulesJson) {
+            let rules = JSON.parse(rulesJson);
+            let container = document.getElementById("rulesRoot");
+            container.innerHTML = "";  // temizle
+
+            for (let i = 0; i < rules.length; i++) {
+                let rule = rules[i];
+
+                // Her kural için bir div
+                let ruleDiv = document.createElement("div");
+                ruleDiv.className = "ruleContainer";
+
+                // Checkbox
+                let cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.id = "rule_cb_" + i;
+
+                let cbLabel = document.createElement("span");
+                cbLabel.innerText = " " + rule.ruleName; // "Kural 1" vs.
+
+                let checkboxArea = document.createElement("div");
+                checkboxArea.className = "checkboxArea";
+                checkboxArea.appendChild(cb);
+                checkboxArea.appendChild(cbLabel);
+
+                // LaTeX alanı
+                let latexDiv = document.createElement("div");
+                latexDiv.className = "latexArea";
+                // "ruleLatex" adında bir span koyuyoruz. MathJax bunun içeriğini dönüştürecek.
+                latexDiv.innerHTML = "\\(" + rule.formula + "\\)";
+
+                ruleDiv.appendChild(checkboxArea);
+                ruleDiv.appendChild(latexDiv);
+                container.appendChild(ruleDiv);
+            }
+
+            // MathJax yüklendiyse, yeniden typeset
+            if (window.isMathJaxLoaded) {
+                MathJax.typesetPromise([container]).catch(err => console.log(err));
+            }
+        }
+
+        // "Kaydet ve Başla" butonuna basınca çalışacak fonksiyon
+        function onSaveClicked() {
+            let container = document.getElementById("rulesRoot");
+            let checkboxes = container.querySelectorAll("input[type='checkbox']");
+            let selectedIndices = [];
+            for (let i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    selectedIndices.push(i);
+                }
+            }
+            // Bu seçilen indeksleri Android tarafına gönderelim
+            if (window.AndroidInterface && window.AndroidInterface.onSaveRules) {
+                window.AndroidInterface.onSaveRules(JSON.stringify(selectedIndices));
+            } else {
+                console.log("AndroidInterface.onSaveRules not found!");
+            }
+        }
+    </script>
+</head>
+<body>
+<!-- Kuralları basacağımız alan -->
+<div id="rulesRoot" style="margin:10px;"></div>
+
+<!-- Kaydet Butonu -->
+<button class="saveBtn" onclick="onSaveClicked()">Kaydet ve Başla</button>
+</body>
+</html>

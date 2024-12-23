@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>History Detail</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            font-family: sans-serif;
+        }
+        .dateHeader {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 16px;
+        }
+        .ruleRow {
+            border-bottom: 1px solid #ccc;
+            padding: 8px;
+        }
+        .latexArea {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        .statsArea {
+            display: inline-block;
+            vertical-align: middle;
+            color: #333;
+            margin-left: 10px;
+        }
+    </style>
+
+    <!-- Burada local MathJax kullanıyoruz: es5/tex-mml-chtml.js -->
+    <script src="es5/tex-mml-chtml.js" async></script>
+    <script>
+        window.isMathJaxLoaded = false;
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+            svg: { fontCache: 'global' },
+            startup: {
+                ready: () => {
+                    window.isMathJaxLoaded = true;
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+
+        function showHistoryDetail(detailJson) {
+            /*
+              Beklenen detailJson yapısı:
+              {
+                "date": "2024-12-24 00:00",
+                "rules": [
+                  {"ruleName":"Kural 4", "formula":"\\int (ax+b)...", "correct":2, "wrong":1},
+                  ...
+                ]
+              }
+            */
+            const detail = JSON.parse(detailJson);
+
+            // Tarih
+            const dateHeader = document.getElementById("dateHeader");
+            dateHeader.textContent = "Tarih: " + detail.date;
+
+            // Kural listesi
+            let rulesList = detail.rules || [];
+            const container = document.getElementById("rulesContainer");
+            container.innerHTML = "";
+
+            for (let i = 0; i < rulesList.length; i++) {
+                let ruleObj = rulesList[i];
+
+                let rowDiv = document.createElement("div");
+                rowDiv.className = "ruleRow";
+
+                // LaTeX alanı
+                let latexDiv = document.createElement("div");
+                latexDiv.className = "latexArea";
+                // ruleObj.formula -> latex
+                // Örneğin: "\\int (ax+b)^n dx"
+                latexDiv.innerHTML = "\\(" + (ruleObj.formula || ruleObj.ruleName) + "\\)";
+
+                // Doğru/Yanlış bilgisi
+                let statsDiv = document.createElement("div");
+                statsDiv.className = "statsArea";
+                statsDiv.textContent = "Doğru: " + (ruleObj.correct||0) + "   Yanlış: " + (ruleObj.wrong||0);
+
+                rowDiv.appendChild(latexDiv);
+                rowDiv.appendChild(statsDiv);
+                container.appendChild(rowDiv);
+            }
+
+            // MathJax yüklendiyse yeniden typeset
+            if (window.isMathJaxLoaded) {
+                MathJax.typesetPromise([container]).catch(err => console.error(err));
+            }
+        }
+    </script>
+</head>
+<body>
+<div id="dateHeader" class="dateHeader"></div>
+<div id="rulesContainer"></div>
+</body>
+</html>
